@@ -1,13 +1,39 @@
 #include <iostream>
-#include "ComplexNumber.h"
+#include "Matrix.h"
 
 using namespace std;
 
 int main()
 {
-	char operation;
-	ComplexNumber a, b, result;
+	Matrix<long long> matrix;
+	Matrix<long long> result;
+	while (true)
+	{
+		int size;
+		cin >> size;
 
+		matrix.Create(size, size);
+
+		for (int i = 0; i < size; i++)
+		{
+			for (int j = 0; j < size; j++)
+			{
+				cin >> matrix.data[matrix.Idx(i, j)];
+			}
+		}
+
+		int power;
+		cin >> power;
+
+		MatrixPower(&matrix, power, &result);
+		result.Print();
+		cout << endl;
+	}
+
+	//char operation;
+	//ComplexNumber a, b, result;
+
+	/*
 	while (true)
 	{
 		cin >> operation;
@@ -45,6 +71,7 @@ int main()
 		}
 		else cout << "Bad op" << endl;
 	}
+	*/
 
 	/*
 	while (true)

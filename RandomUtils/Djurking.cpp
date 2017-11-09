@@ -6,7 +6,7 @@ Matrix<int> **bestStack, **bestExtStack;
 int bestStackPos;
 int bestCost;
 
-// Джурка добре ама памет тече
+// Джурка добре и вече памет не тече (или поне по-малко)
 void DjurkIt(Matrix<int> *src, Matrix<int> *ext)
 {
 	int stackSize = src->rows;
@@ -33,7 +33,7 @@ void DjurkIt(Matrix<int> *src, Matrix<int> *ext)
 	bestCost = 999999;
 
 	stack[0] = new Matrix<int>(src);
-	extStack[0] = ext;
+	extStack[0] = new Matrix<int>(ext);
 	extStack[0]->Print();
 	cout << endl;
 	DjurkItRec(0, stack, extStack, usedRows, usedColumns, 0);
@@ -42,8 +42,6 @@ void DjurkIt(Matrix<int> *src, Matrix<int> *ext)
 	
 	if (ext)
 	{
-		//PrintMatrixStack(bestStack, bestStackPos);
-		//PrintMatrixStack(bestExtStack, bestStackPos);
 		PrintMatrixStack(bestStack, bestExtStack, bestStackPos);
 	}
 	else PrintMatrixStack(bestStack, bestStackPos);
@@ -54,15 +52,22 @@ void DjurkIt(Matrix<int> *src, Matrix<int> *ext)
 		if (stack[i]) delete stack[i];
 	}
 
+	delete[] usedColumns;
+	delete[] usedRows;
 	delete[] bestStack;
 	delete[] stack;
 
 	if (ext)
 	{
 		for (int i = 0; i < stackSize; i++)
+		{
+			if (extStack[i]) delete extStack[i];
 			if (bestExtStack[i]) delete bestExtStack[i];
-		delete[] extStack;
+		}
 	}
+
+	delete[] extStack;
+	delete[] bestExtStack;
 }
 
 int gcd(int a, int b) 

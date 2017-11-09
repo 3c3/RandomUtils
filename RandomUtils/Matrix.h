@@ -1,4 +1,6 @@
-﻿#pragma once
+#ifndef  MATRIX_H
+#define MATRIX_H
+
 #include <iostream>
 #include <algorithm>
 
@@ -6,9 +8,8 @@ template<class T>
 class Matrix
 {
 private:
-	
+
 	bool created = false;
-	// мързел
 
 public:
 	T *data = 0;
@@ -16,9 +17,23 @@ public:
 	int rows = 0;
 	int columns = 0;
 
+	Matrix()
+	{
+
+	}
+
+	Matrix(Matrix<T> *other)
+	{
+		created = true;
+		rows = other->rows;
+		columns = other->columns;
+		data = new T[rows*columns];
+		CopyFrom(other);
+	}
+
 	~Matrix()
 	{
-		if (data) delete data;
+		if (created && data) delete data;
 	}
 
 	void Create(int rows, int columns);
@@ -30,21 +45,27 @@ public:
 	int GetColumns();
 	bool GetDeterminant(T *outDet);
 
+	void AddRow(int src, int dest, T lambda);
+	void MultiplyRow(int row, T lambda);
+
 	void Print();
 };
 
-bool IsPermutationEven(int *perm, int size)
+template<class T>
+void Matrix<T>::AddRow(int src, int dest, T lambda)
 {
-	bool even = true;
-	for (int i = 0; i < size; i++)
-	{
-		for (int j = i + 1; j < size; j++)
-		{
-			if (perm[i] > perm[j]) even = !even;
-		}
-	}
-	return even;
+	for (int i = 0; i < columns; i++)
+		data[Idx(dest, i)] += lambda * data[Idx(src, i)];
 }
+
+template<class T>
+void Matrix<T>::MultiplyRow(int row, T lambda)
+{
+	for (int i = 0; i < columns; i++)
+		data[Idx(row, i)] *= lambda;
+}
+
+bool IsPermutationEven(int *perm, int size);
 
 template<class T>
 inline int Matrix<T>::Idx(int r, int c)
@@ -79,8 +100,8 @@ void Matrix<T>::MakeUnit()
 	{
 		for (int j = 0; j < rows; j++)
 		{
-			data[Idx(i, j)] = i==j ? 1 : 0;
-		}		
+			data[Idx(i, j)] = i == j ? 1 : 0;
+		}
 	}
 }
 
@@ -137,7 +158,7 @@ bool Matrix<T>::GetDeterminant(T *outDet)
 		{
 			T current = data[Idx(i, permutation[i] - 1)];
 			product *= current;
-		}			
+		}
 
 		if (IsPermutationEven(permutation, rows)) *outDet += product;
 		else *outDet -= product;
@@ -177,7 +198,7 @@ static bool MatrixMultiply(Matrix<T> *a, Matrix<T> *b, Matrix<T> *out)
 				T rightVal = b->Get(i, column);
 				current += leftVal*rightVal;
 			}
-				
+
 			out->Set(row, column, current);
 		}
 	}
@@ -198,7 +219,7 @@ static bool MatrixPower(Matrix<T> *src, int power, Matrix<T> *out)
 	highest++;
 
 	highest++;
-	Matrix<T> *powers2 = new Matrix<T>[highest]; // степен 2^k
+	Matrix<T> *powers2 = new Matrix<T>[highest]; // ������ 2^k
 	for (int i = 1; i < highest; i++) powers2[i].Create(src->rows, src->rows);
 
 	highest--;
@@ -242,3 +263,28 @@ void Matrix<T>::Print()
 		std::cout << endl;
 	}
 }
+
+template<class T>
+Matrix<T>* AddRows(Matrix<T> *src, int srcRow, int destRow, T lambda)
+{
+	Matrix<T> *result = new Matrix<T>(src);
+
+	for (int i = 0; i < src->columns; i++)
+	{
+		result->Set(destRow, i, src->Get(destRow, i) + lambda*src->Get(srcRow, i));
+	}
+
+	return result;
+}
+
+template<class T>
+Matrix<T>* MultiplyRow(Matrix<T> *src, int row, T lambda)
+{
+	Matrix<T> *result = new Matrix<T>(src);
+	for (int i = 0; i < src->columns; i++)
+		result->data[result->Idx(row, i)] *= lambda;
+
+	return result;
+}
+
+#endif // ! MATRIX_H

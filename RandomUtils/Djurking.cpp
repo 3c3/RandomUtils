@@ -14,6 +14,7 @@ void DjurkIt(Matrix<int> *src, Matrix<int> *ext)
 	if (src->columns > stackSize) stackSize = src->columns;
 	stackSize++;
 
+	// Създаване на стаковете
 	Matrix<int>** stack = new Matrix<int>*[stackSize];
 	memset(stack, 0, sizeof(Matrix<int>*)*stackSize);
 
@@ -95,9 +96,6 @@ void DjurkItRec(int pos, Matrix<int>** matrixStack, Matrix<int>** extStack, stac
 
 			bool negative = false; // по-удобно
 			
-			stringstream currentAction;
-			currentAction << "Selected: R" << row + 1 << " C" << column+1 <<" -> ";
-
 			int value = current->Get(row, column);
 			if (value < 0)
 			{
@@ -106,13 +104,14 @@ void DjurkItRec(int pos, Matrix<int>** matrixStack, Matrix<int>** extStack, stac
 			}
 			int djurkingCost = 0;
 
+			stringstream currentAction;
+			currentAction << "Selected: R" << row + 1 << " C" << column + 1 << " -> ";
+
 			Matrix<int>* target = new Matrix<int>(current); // матрицата след едно джуркане
-			Matrix<int> *newExt = 0;
+			Matrix<int> *newExt = 0; // новата разширена матрица
 			if (extStack[pos])
 			{
-				//extStack[pos]->Print();
-				//cout << endl;
-				newExt = new	Matrix<int>(extStack[pos]);
+				newExt = new Matrix<int>(extStack[pos]);
 			}
 
 			for (int i = 0; i < current->rows; i++)
@@ -121,7 +120,7 @@ void DjurkItRec(int pos, Matrix<int>** matrixStack, Matrix<int>** extStack, stac
 				if (target->Get(i, column) == 0) continue; // готова работа
 
 				int nonzero = target->Get(i, column);
-				int positive = nonzero ? nonzero : -nonzero;
+				int positive = nonzero ? nonzero : -nonzero; // това май нищо не прави ама ако е правилно не работи...
 
 				if (positive % value == 0)
 				{
@@ -159,8 +158,6 @@ void DjurkItRec(int pos, Matrix<int>** matrixStack, Matrix<int>** extStack, stac
 			if (newExt)
 			{
 				extStack[pos + 1] = newExt;
-				//newExt->Print();
-				//cout << endl;
 			}
 
 			string str = currentAction.str();

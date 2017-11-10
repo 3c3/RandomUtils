@@ -5,6 +5,7 @@ using namespace std;
 Matrix<int> **bestStack, **bestExtStack;
 int bestStackPos;
 int bestCost;
+stack<string> bestActions;
 
 // Джурка добре и вече памет не тече (или поне по-малко)
 void DjurkIt(Matrix<int> *src, Matrix<int> *ext)
@@ -33,10 +34,11 @@ void DjurkIt(Matrix<int> *src, Matrix<int> *ext)
 	bestCost = 999999;
 
 	stack[0] = new Matrix<int>(src);
-	extStack[0] = new Matrix<int>(ext);
-	extStack[0]->Print();
-	cout << endl;
-	DjurkItRec(0, stack, extStack, usedRows, usedColumns, 0);
+	if (ext) extStack[0] = new Matrix<int>(ext);
+	
+	std::stack<string> actions;
+
+	DjurkItRec(0, stack, extStack, actions, usedRows, usedColumns, 0);
 
 	cout << "Best djurking cost: " << bestCost << endl;
 	
@@ -75,7 +77,7 @@ int gcd(int a, int b)
 	return b == 0 ? a : gcd(b, a % b);
 }
 
-void DjurkItRec(int pos, Matrix<int>** matrixStack, Matrix<int>** extStack, bool* usedRow, bool* usedColumn, int cost)
+void DjurkItRec(int pos, Matrix<int>** matrixStack, Matrix<int>** extStack, stack<string> &actions, bool* usedRow, bool* usedColumn, int cost)
 {
 	Matrix<int>* current = matrixStack[pos];
 
@@ -92,6 +94,9 @@ void DjurkItRec(int pos, Matrix<int>** matrixStack, Matrix<int>** extStack, bool
 			if (current->Get(row, column) == 0) continue; // няма смисъл с този
 
 			bool negative = false; // по-удобно
+			
+			stringstream currentAction;
+			currentAction << "Selected: R" << row + 1 << " C" << column+1 <<" -> ";
 
 			int value = current->Get(row, column);
 			if (value < 0)
@@ -105,8 +110,8 @@ void DjurkItRec(int pos, Matrix<int>** matrixStack, Matrix<int>** extStack, bool
 			Matrix<int> *newExt = 0;
 			if (extStack[pos])
 			{
-				extStack[pos]->Print();
-				cout << endl;
+				//extStack[pos]->Print();
+				//cout << endl;
 				newExt = new	Matrix<int>(extStack[pos]);
 			}
 
@@ -116,7 +121,9 @@ void DjurkItRec(int pos, Matrix<int>** matrixStack, Matrix<int>** extStack, bool
 				if (target->Get(i, column) == 0) continue; // готова работа
 
 				int nonzero = target->Get(i, column);
-				if (nonzero % value == 0)
+				int positive = nonzero ? nonzero : -nonzero;
+
+				if (positive % value == 0)
 				{
 					int coef = -nonzero / value;
 					if (negative) coef = -coef;
@@ -124,11 +131,11 @@ void DjurkItRec(int pos, Matrix<int>** matrixStack, Matrix<int>** extStack, bool
 					djurkingCost++; // точно се дели, добро джуркане
 					target->AddRow(row, i, coef);
 					if (newExt) newExt->AddRow(row, i, coef);
+					currentAction << "R" << i + 1 << " " << coef << ", ";
+					
 				}
 				else
 				{
-					int positive = nonzero ? nonzero : -nonzero;
-
 					djurkingCost += 5; // трябва да се умножи, лошо джуркане
 					int nok = positive*value / gcd(positive, value);
 
@@ -142,6 +149,8 @@ void DjurkItRec(int pos, Matrix<int>** matrixStack, Matrix<int>** extStack, bool
 						newExt->MultiplyRow(i, nok / positive);
 						newExt->AddRow(row, i, coef);
 					}
+
+					currentAction << (nok / positive) << "R" << i + 1 << " " << coef << ", ";
 				}
 			}
 
@@ -153,8 +162,13 @@ void DjurkItRec(int pos, Matrix<int>** matrixStack, Matrix<int>** extStack, bool
 				//newExt->Print();
 				//cout << endl;
 			}
-			DjurkItRec(pos + 1, matrixStack, extStack, usedRow, usedColumn, cost + djurkingCost);
 
+			string str = currentAction.str();
+			actions.push(str);
+
+			DjurkItRec(pos + 1, matrixStack, extStack, actions, usedRow, usedColumn, cost + djurkingCost);
+
+			actions.pop();
 			usedRow[row] = false;
 			pushed = true;
 			delete target;
@@ -177,6 +191,8 @@ void DjurkItRec(int pos, Matrix<int>** matrixStack, Matrix<int>** extStack, bool
 			CopyMatrixStack(matrixStack, bestStack, pos);
 
 			if (extStack[0]) CopyMatrixStack(extStack, bestExtStack, pos);
+
+			bestActions = actions;
 		}
 	}
 }
@@ -192,9 +208,18 @@ void CopyMatrixStack(Matrix<int>** src, Matrix<int>** dest, int lastPos)
 
 void PrintMatrixStack(Matrix<int>** matrixStack, int idxLast)
 {
+	string* actions = new string[bestActions.size()];
+	int idx = bestActions.size() - 1;
+	while (!bestActions.empty())
+	{
+		actions[idx--] = bestActions.top();
+		bestActions.pop();
+	}
+
 	for (int i = 0; i <= idxLast; i++)
 	{
 		matrixStack[i]->Print();
+		if (i < idxLast) cout << actions[i] << endl;
 		cout << endl;
 	}
 }
@@ -205,6 +230,14 @@ void PrintMatrixStack(Matrix<int>** matrixStack, Matrix<int>** extStack, int idx
 	int columns = matrixStack[0]->columns;
 	int extColumns = extStack[0]->columns;
 
+	string* actions = new string[bestActions.size()];
+	int idx = bestActions.size() - 1;
+	while (!bestActions.empty())
+	{
+		actions[idx--] = bestActions.top();
+		bestActions.pop();
+	}
+
 	for (int i = 0; i <= idxLast; i++)
 	{
 		for (int r = 0; r < rows; r++)
@@ -212,9 +245,9 @@ void PrintMatrixStack(Matrix<int>** matrixStack, Matrix<int>** extStack, int idx
 			for (int c = 0; c < columns; c++) cout << matrixStack[i]->Get(r,c) << '\t';
 			cout << "|\t";
 			for (int c = 0; c < extColumns; c++) cout << extStack[i]->Get(r,c) << '\t';
-			cout << endl;
+			cout << endl;			
 		}
-
+		if (i < idxLast) cout << actions[i] << endl;
 		cout << endl;
 	}
 }

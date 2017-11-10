@@ -34,9 +34,6 @@ int main()
 			}
 		}
 
-		b.Print();
-		//a.Print();
-
 		DjurkIt(&a, &b);
 	}
 

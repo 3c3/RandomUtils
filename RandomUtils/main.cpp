@@ -8,25 +8,29 @@ int main()
 	while (true)
 	{
 		Matrix<int> a;
-		int size;
-		cin >> size;
-		a.Create(size, size);
+		int rows;
+		int columns;
+		cin >> rows;
+		cin >> columns;
+		a.Create(rows, columns);
 
-		for (int i = 0; i < size; i++)
+		for (int i = 0; i < rows; i++)
 		{
-			for (int j = 0; j < size; j++)
+			for (int j = 0; j < columns; j++)
 			{
 				cin >> a.data[a.Idx(i, j)];
 			}
 		}
 
+		cout << "Enter ext columns: ";
+
 		int extColumns;
 		cin >> extColumns;
 
 		Matrix<int> b;
-		b.Create(size, extColumns);
+		b.Create(rows, extColumns);
 
-		for (int i = 0; i < size; i++)
+		for (int i = 0; i < rows; i++)
 		{
 			for (int j = 0; j < extColumns; j++)
 			{
@@ -34,7 +38,7 @@ int main()
 			}
 		}
 
-		DjurkIt(&a, &b);
+		DjurkIt(&a, extColumns ? &b : 0);
 	}
 
 	return 0;
